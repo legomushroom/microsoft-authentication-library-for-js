@@ -4,13 +4,14 @@
 import { Logger } from "./Logger";
 import { UrlUtils } from "./utils/UrlUtils";
 import { TelemetryEmitter } from "./telemetry/TelemetryTypes"
+import { CustomStorage, CacheLocation } from './Storage';
 
 /**
  * Cache location options supported by MSAL are:
  * - local storage: MSAL uses browsers local storage to store its cache
  * - session storage: MSAL uses the browsers session storage to store its cache
  */
-export type CacheLocation = "localStorage" | "sessionStorage";
+export { CacheLocation } from './Storage';
 
 /**
  * Defaults for the Configuration Options

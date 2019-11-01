@@ -9,6 +9,8 @@ export { CacheLocation, Configuration } from "./Configuration";
 export { AuthenticationParameters } from "./AuthenticationParameters";
 export { AuthResponse } from "./AuthResponse";
 
+export { CustomStorage } from "./Storage";
+
 // Errors
 export { AuthError } from "./error/AuthError";
 export { ClientAuthError } from "./error/ClientAuthError";

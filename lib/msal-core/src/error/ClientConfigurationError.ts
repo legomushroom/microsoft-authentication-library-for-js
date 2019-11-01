@@ -4,6 +4,7 @@
 import { Constants } from "../utils/Constants";
 import { ClientAuthError } from "./ClientAuthError";
 import { TelemetryOptions } from "../Configuration";
+import { CacheLocation } from '../Storage';
 
 export const ClientConfigurationErrorMessage = {
     configurationNotSet: {
@@ -98,7 +99,7 @@ export class ClientConfigurationError extends ClientAuthError {
             `${ClientConfigurationErrorMessage.configurationNotSet.desc}`);
     }
 
-    static createInvalidCacheLocationConfigError(givenCacheLocation: string): ClientConfigurationError {
+    static createInvalidCacheLocationConfigError(givenCacheLocation: CacheLocation): ClientConfigurationError {
         return new ClientConfigurationError(ClientConfigurationErrorMessage.invalidCacheLocation.code,
             `${ClientConfigurationErrorMessage.invalidCacheLocation.desc} Provided value: ${givenCacheLocation}. Possible values are: ${Constants.cacheLocationLocal}, ${Constants.cacheLocationSession}.`);
     }
