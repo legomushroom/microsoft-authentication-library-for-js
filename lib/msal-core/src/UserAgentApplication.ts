@@ -332,12 +332,12 @@ export class UserAgentApplication {
    * Use when initiating the login process by redirecting the user's browser to the authorization endpoint.
    * @param {@link (AuthenticationParameters:type)}
    */
-  async loginRedirect(request?: AuthenticationParameters): Promise<void> {
+  loginRedirect(request?: AuthenticationParameters): void {
     // Throw error if callbacks are not set before redirect
     if (!this.redirectCallbacksSet) {
       throw ClientConfigurationError.createRedirectCallbacksNotSetError();
     }
-    await this.acquireTokenInteractive(Constants.interactionTypeRedirect, true, request);
+    this.acquireTokenInteractive(Constants.interactionTypeRedirect, true, request);
   }
 
   /**
@@ -346,7 +346,7 @@ export class UserAgentApplication {
    *
    * To renew idToken, please pass clientId as the only scope in the Authentication Parameters
    */
-  async acquireTokenRedirect(request: AuthenticationParameters): Promise<void> {
+  acquireTokenRedirect(request: AuthenticationParameters): void {
     if (!request) {
       throw ClientConfigurationError.createEmptyRequestError();
     }
@@ -355,7 +355,7 @@ export class UserAgentApplication {
     if (!this.redirectCallbacksSet) {
       throw ClientConfigurationError.createRedirectCallbacksNotSetError();
     }
-    await this.acquireTokenInteractive(Constants.interactionTypeRedirect, false, request);
+    this.acquireTokenInteractive(Constants.interactionTypeRedirect, false, request);
   }
 
   /**
@@ -366,8 +366,8 @@ export class UserAgentApplication {
    * @returns {Promise.<AuthResponse>} - a promise that is fulfilled when this function has completed, or rejected if an error was raised. Returns the {@link AuthResponse} object
    */
   loginPopup(request?: AuthenticationParameters): Promise<AuthResponse> {
-    return new Promise<AuthResponse>(async (resolve, reject) => {
-      await this.acquireTokenInteractive(Constants.interactionTypePopup, true, request, resolve, reject);
+    return new Promise<AuthResponse>((resolve, reject) => {
+      this.acquireTokenInteractive(Constants.interactionTypePopup, true, request, resolve, reject);
     });
   }
 
@@ -384,7 +384,7 @@ export class UserAgentApplication {
     }
 
     return new Promise<AuthResponse>(async (resolve, reject) => {
-      await this.acquireTokenInteractive(Constants.interactionTypePopup, false, request, resolve, reject);
+      this.acquireTokenInteractive(Constants.interactionTypePopup, false, request, resolve, reject);
     });
   }
 
