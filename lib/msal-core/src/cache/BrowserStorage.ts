@@ -3,27 +3,95 @@
  * Licensed under the MIT License.
  */
 
-import { CacheLocation } from "../Configuration";
 import { ClientConfigurationError } from "../error/ClientConfigurationError";
 import { AuthError } from "../error/AuthError";
+
+interface ICustomStorage {
+    setItem(key: string, value: string): Promise<void>;
+    getItem(key: string): Promise<string | null>;
+    removeItem(key: string): Promise<void>;
+    clear(): Promise<void>;
+    key(index: number): Promise<string | undefined>;
+    getAllKeys(): Promise<string[]>;
+}
+
+class CustomStorageNotImplementedError extends Error {
+    constructor(methodName: string) {
+        super(`Method not implemented: "${methodName}" on the custom storage`);
+    }
+}
+
+export class CustomStorage implements ICustomStorage {
+    async setItem(key: string, value: string): Promise<void> {
+        throw new CustomStorageNotImplementedError("setItem");
+    }
+
+    async getItem(key: string): Promise<string> {
+        throw new CustomStorageNotImplementedError("getItem");
+    }
+
+    async removeItem(key: string): Promise<void> {
+        throw new CustomStorageNotImplementedError("removeItem");
+    }
+
+    async clear(): Promise<void> {
+        throw new CustomStorageNotImplementedError("clear");
+    }
+
+    async key(index: number): Promise<string> {
+        throw new CustomStorageNotImplementedError("key");
+    }
+
+    async getAllKeys(): Promise<string[]> {
+        throw new CustomStorageNotImplementedError("getAllKeysgetAllKeys");
+    }
+}
+
+export type CacheLocation = "localStorage" | "sessionStorage" | ICustomStorage;
 
 /**
  * @hidden
  */
-export class BrowserStorage {// Singleton
+export class BrowserStorage {
+    // Singleton
 
     protected cacheLocation: CacheLocation;
 
     constructor(cacheLocation: CacheLocation) {
         if (!window) {
-            throw AuthError.createNoWindowObjectError("Browser storage class could not find window object");
+            throw AuthError.createNoWindowObjectError(
+                "Browser storage class could not find window object"
+            );
         }
 
-        const storageSupported = typeof window[cacheLocation] !== "undefined" && window[cacheLocation] != null;
-        if (!storageSupported) {
-            throw ClientConfigurationError.createStorageNotSupportedError(cacheLocation);
+        if (typeof this.cacheLocation === "string") {
+            const stringStorageSupported =
+                typeof window[this.cacheLocation] !== "undefined" &&
+                window[this.cacheLocation] != null;
+
+            if (!stringStorageSupported) {
+                throw ClientConfigurationError.createStorageNotSupportedError(
+                    this.cacheLocation
+                );
+            }
         }
         this.cacheLocation = cacheLocation;
+    }
+
+    getStorage(): ICustomStorage | typeof localStorage {
+        if (this.cacheLocation === "localStorage") {
+            return localStorage;
+        }
+
+        if (this.cacheLocation === "sessionStorage") {
+            return sessionStorage;
+        }
+
+        if (this.cacheLocation instanceof CustomStorage) {
+            return this.cacheLocation;
+        }
+
+        throw new Error("Unsupported storage type");
     }
 
     /**
@@ -32,8 +100,9 @@ export class BrowserStorage {// Singleton
      * @param value
      * @param enableCookieStorage
      */
-    setItem(key: string, value: string, enableCookieStorage?: boolean): void {
-        window[this.cacheLocation].setItem(key, value);
+    async setItem(key: string, value: string, enableCookieStorage?: boolean): Promise<void> {
+        const storageLocation = this.getStorage();
+        await storageLocation.setItem(key, value);
         if (enableCookieStorage) {
             this.setItemCookie(key, value);
         }
@@ -44,26 +113,32 @@ export class BrowserStorage {// Singleton
      * @param key
      * @param enableCookieStorage
      */
-    getItem(key: string, enableCookieStorage?: boolean): string {
+    async getItem(key: string, enableCookieStorage?: boolean): Promise<string> {
         if (enableCookieStorage && this.getItemCookie(key)) {
             return this.getItemCookie(key);
         }
-        return window[this.cacheLocation].getItem(key);
+        const storageLocation = this.getStorage();
+
+        return await storageLocation.getItem(key);
     }
 
     /**
      * remove value from storage
      * @param key
      */
-    removeItem(key: string): void {
-        return window[this.cacheLocation].removeItem(key);
+    async removeItem(key: string): Promise<void> {
+        const storageLocation = this.getStorage();
+
+        await storageLocation.removeItem(key);
     }
 
     /**
      * clear storage (remove all items from it)
      */
-    clear(): void {
-        return window[this.cacheLocation].clear();
+    async clear(): Promise<void> {
+        const storageLocation = this.getStorage();
+
+        await storageLocation.clear();
     }
 
     /**
@@ -115,7 +190,9 @@ export class BrowserStorage {// Singleton
      */
     getCookieExpirationTime(cookieLifeDays: number): string {
         const today = new Date();
-        const expr = new Date(today.getTime() + cookieLifeDays * 24 * 60 * 60 * 1000);
+        const expr = new Date(
+            today.getTime() + cookieLifeDays * 24 * 60 * 60 * 1000
+        );
         return expr.toUTCString();
     }
 }

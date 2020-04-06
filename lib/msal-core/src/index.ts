@@ -10,6 +10,8 @@ export { AuthenticationParameters } from "./AuthenticationParameters";
 export { AuthResponse } from "./AuthResponse";
 export { CryptoUtils } from "./utils/CryptoUtils";
 
+export { CustomStorage } from "./cache/BrowserStorage";
+
 // Errors
 export { AuthError } from "./error/AuthError";
 export { ClientAuthError } from "./error/ClientAuthError";

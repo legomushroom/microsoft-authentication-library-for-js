@@ -1,5 +1,5 @@
 {
-  "name": "msal",
+  "name": "@vs/msal",
   "author": {
     "name": "Microsoft",
     "email": "nugetaad@microsoft.com",

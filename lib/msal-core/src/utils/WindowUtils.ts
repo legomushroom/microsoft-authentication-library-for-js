@@ -263,14 +263,14 @@ export class WindowUtils {
      *
      * @param cacheStorage
      */
-    static checkIfBackButtonIsPressed(cacheStorage: AuthCache) {
-        const redirectCache = cacheStorage.getItem(TemporaryCacheKeys.REDIRECT_REQUEST);
+    static async checkIfBackButtonIsPressed(cacheStorage: AuthCache) {
+        const redirectCache = await cacheStorage.getItem(TemporaryCacheKeys.REDIRECT_REQUEST);
 
         // if redirect request is set and there is no hash
         if(redirectCache && !UrlUtils.urlContainsHash(window.location.hash)) {
             const splitCache = redirectCache.split(Constants.resourceDelimiter);
             const state = splitCache.length > 1 ? splitCache[splitCache.length-1]: null;
-            cacheStorage.resetTempCacheItems(state);
+            await cacheStorage.resetTempCacheItems(state);
         }
     }
 }
