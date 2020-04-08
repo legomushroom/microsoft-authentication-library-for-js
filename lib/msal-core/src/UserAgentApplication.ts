@@ -230,7 +230,9 @@ export class UserAgentApplication {
         window.promiseMappedToRenewStates = {};
         window.msal = this;
 
-        this.asyncInit();
+        if (doAsyncInit) {
+            this.asyncInit();
+        }
     }
 
     /**
@@ -358,8 +360,8 @@ export class UserAgentApplication {
         // validate request
         const request: AuthenticationParameters = RequestUtils.validateRequest(userRequest, true, this.clientId, Constants.interactionTypePopup);
 
-        return new Promise<AuthResponse>((resolve, reject) => {
-            this.acquireTokenInteractive(Constants.interactionTypePopup, true, request, resolve, reject);
+        return new Promise<AuthResponse>(async (resolve, reject) => {
+            await this.acquireTokenInteractive(Constants.interactionTypePopup, true, request, resolve, reject);
         }).catch(async (error: AuthError) => {
             await this.cacheStorage.resetTempCacheItems(request.state);
             throw error;
@@ -377,8 +379,8 @@ export class UserAgentApplication {
         // validate request
         const request: AuthenticationParameters = RequestUtils.validateRequest(userRequest, false, this.clientId, Constants.interactionTypePopup);
 
-        return new Promise<AuthResponse>((resolve, reject) => {
-            this.acquireTokenInteractive(Constants.interactionTypePopup, false, request, resolve, reject);
+        return new Promise<AuthResponse>(async (resolve, reject) => {
+            await this.acquireTokenInteractive(Constants.interactionTypePopup, false, request, resolve, reject);
         }).catch(async (error: AuthError) => {
             await this.cacheStorage.resetTempCacheItems(request.state);
             throw error;
@@ -884,6 +886,12 @@ export class UserAgentApplication {
             window.callbackMappedToRenewStates[expectedState] = (response: AuthResponse, error: AuthError) => {
                 // reset active renewals
                 window.activeRenewals[scope] = null;
+
+                if (!window.promiseMappedToRenewStates[expectedState]) {
+                    // should never happen but intermittently happening in some cases where the acquireTokenSilent is called incorrectly twice
+                    window.callbackMappedToRenewStates[expectedState] = null;
+                    return;
+                }
 
                 // for all promiseMappedtoRenewStates for a given 'state' - call the reject/resolve with error/token respectively
                 for (let i = 0; i < window.promiseMappedToRenewStates[expectedState].length; ++i) {
