@@ -47,7 +47,7 @@ export class CustomStorage implements ICustomStorage {
     }
 }
 
-export type CacheLocation = "localStorage" | "sessionStorage" | ICustomStorage;
+export type CacheLocation = "localStorage" | "sessionStorage" | ICustomStorage; // eslint-disable-line
 
 /**
  * @hidden

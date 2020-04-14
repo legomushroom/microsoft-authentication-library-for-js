@@ -10,8 +10,7 @@ import {
     ErrorCacheKeys
 } from "../utils/Constants";
 import { AccessTokenCacheItem } from "./AccessTokenCacheItem";
-import { CacheLocation } from "../Configuration";
-import { BrowserStorage, CustomStorage } from "./BrowserStorage";
+import { BrowserStorage, CustomStorage, CacheLocation } from "./BrowserStorage";
 import { ClientAuthError } from "../error/ClientAuthError";
 
 /**
@@ -265,9 +264,7 @@ export class AuthCache extends BrowserStorage {
                             JSON.parse(value)
                         );
                         results.push(newAccessTokenCacheItem);
-                    } catch (e) {
-                        // ignore this error as some keys are not json even when they contain clientId and homeAccountIdentifier
-                        // throw ClientAuthError.createCacheParseError(key);
+                    } catch {
                     }
                 }
             }

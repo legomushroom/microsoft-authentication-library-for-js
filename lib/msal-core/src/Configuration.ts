@@ -6,14 +6,7 @@
 import { Logger } from "./Logger";
 import { UrlUtils } from "./utils/UrlUtils";
 import { TelemetryEmitter } from "./telemetry/TelemetryTypes";
-import { CacheLocation } from './cache/BrowserStorage';
-
-/**
- * Cache location options supported by MSAL are:
- * - local storage: MSAL uses browsers local storage to store its cache
- * - session storage: MSAL uses the browsers session storage to store its cache
- */
-export { CacheLocation } from './cache/BrowserStorage';
+import { CacheLocation } from './cache/BrowserStorage'; // eslint-disable-line
 
 /**
  * Defaults for the Configuration Options

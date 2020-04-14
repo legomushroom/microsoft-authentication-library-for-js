@@ -6,7 +6,7 @@
 import { Constants } from "../utils/Constants";
 import { ClientAuthError } from "./ClientAuthError";
 import { TelemetryOptions } from "../Configuration";
-import { CacheLocation } from '../cache/BrowserStorage';
+import { CacheLocation } from '../cache/BrowserStorage'; // eslint-disable-line
 
 export const ClientConfigurationErrorMessage = {
     configurationNotSet: {

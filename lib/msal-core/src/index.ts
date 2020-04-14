@@ -5,12 +5,12 @@ export { Account } from "./Account";
 export { Constants } from "./utils/Constants";
 export { Authority } from "./authority/Authority";
 export { CacheResult } from "./UserAgentApplication";
-export { CacheLocation, Configuration } from "./Configuration";
+export { Configuration } from "./Configuration";
 export { AuthenticationParameters } from "./AuthenticationParameters";
 export { AuthResponse } from "./AuthResponse";
 export { CryptoUtils } from "./utils/CryptoUtils";
 
-export { CustomStorage } from "./cache/BrowserStorage";
+export { CustomStorage, CacheLocation } from "./cache/BrowserStorage";
 
 // Errors
 export { AuthError } from "./error/AuthError";
