@@ -6,6 +6,7 @@
 import { Constants } from "../utils/Constants";
 import { ClientAuthError } from "./ClientAuthError";
 import { TelemetryOptions } from "../Configuration";
+import { CacheLocation } from '../cache/BrowserStorage'; // eslint-disable-line
 
 export const ClientConfigurationErrorMessage = {
     configurationNotSet: {
@@ -100,7 +101,7 @@ export class ClientConfigurationError extends ClientAuthError {
             `${ClientConfigurationErrorMessage.configurationNotSet.desc}`);
     }
 
-    static createStorageNotSupportedError(givenCacheLocation: string) : ClientConfigurationError {
+    static createStorageNotSupportedError(givenCacheLocation: CacheLocation) : ClientConfigurationError {
         return new ClientConfigurationError(ClientConfigurationErrorMessage.storageNotSupported.code,
             `${ClientConfigurationErrorMessage.storageNotSupported.desc} Given location: ${givenCacheLocation}`);
     }

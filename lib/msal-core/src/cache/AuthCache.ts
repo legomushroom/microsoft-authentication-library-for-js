@@ -5,8 +5,7 @@
 
 import { Constants, PersistentCacheKeys, TemporaryCacheKeys, ErrorCacheKeys} from "../utils/Constants";
 import { AccessTokenCacheItem } from "./AccessTokenCacheItem";
-import { CacheLocation } from "../Configuration";
-import { BrowserStorage } from "./BrowserStorage";
+import { CacheLocation, BrowserStorage, CustomStorage } from "./BrowserStorage"; // eslint-disable-line
 import { ClientAuthError } from "../error/ClientAuthError";
 
 /**
@@ -114,11 +113,15 @@ export class AuthCache extends BrowserStorage {// Singleton
      * Reset the cache items
      */
     resetCacheItems(): void {
-        const storage = window[this.cacheLocation];
+        const storage = this.getStorage();
+        const keys =
+            storage instanceof CustomStorage
+                ? storage.getAllKeys()
+                : Object.keys(storage);
         let key: string;
-        for (key in storage) {
+        for (key of keys) {
             // Check if key contains msal prefix; For now, we are clearing all cache items created by MSAL.js
-            if (storage.hasOwnProperty(key) && (key.indexOf(Constants.cachePrefix) !== -1)) {
+            if (key.indexOf(Constants.cachePrefix) !== -1) {
                 super.removeItem(key);
                 // TODO: Clear cache based on client id (clarify use cases where this is needed)
             }
@@ -129,11 +132,19 @@ export class AuthCache extends BrowserStorage {// Singleton
      * Reset all temporary cache items
      */
     resetTempCacheItems(state: string): void {
-        const storage = window[this.cacheLocation];
+        const storage = this.getStorage();
+
+        const keys =
+            storage instanceof CustomStorage
+                ? storage.getAllKeys()
+                : Object.keys(storage);
         let key: string;
         // check state and remove associated cache
-        for (key in storage) {
-            if ((!state || key.indexOf(state) !== -1) && !this.tokenRenewalInProgress(state)) {
+        for (key of keys) {
+            if (
+                (!state || key.indexOf(state) !== -1) &&
+                !this.tokenRenewalInProgress(state)
+            ) {
                 this.removeItem(key);
                 this.setItemCookie(key, "", -1);
                 this.clearMsalCookie(state);
@@ -171,23 +182,28 @@ export class AuthCache extends BrowserStorage {// Singleton
      * @param homeAccountIdentifier
      */
     getAllAccessTokens(clientId: string, homeAccountIdentifier: string): Array<AccessTokenCacheItem> {
-        const results = Object.keys(window[this.cacheLocation]).reduce((tokens, key) => {
-            const keyMatches = key.match(clientId) && key.match(homeAccountIdentifier) && key.match(Constants.scopes);
-            if ( keyMatches ) {
-                const value = this.getItem(key);
-                if (value) {
+        const results: Array<AccessTokenCacheItem> = [];
+        let accessTokenCacheItem: AccessTokenCacheItem;
+        const storage = this.getStorage();
+
+        const keys =
+            storage instanceof CustomStorage
+                ? storage.getAllKeys()
+                : Object.keys(storage);
+        if(storage) {
+            let key: string;
+            for (key of keys) {
+                if (key.match(clientId) && key.match(homeAccountIdentifier)) {
+                    const value = this.getItem(key);
                     try {
                         const parseAtKey = JSON.parse(key);
                         const newAccessTokenCacheItem = new AccessTokenCacheItem(parseAtKey, JSON.parse(value));
-                        return tokens.concat([ newAccessTokenCacheItem ]);
-                    } catch (e) {
-                        throw ClientAuthError.createCacheParseError(key);
+                        results.push(newAccessTokenCacheItem);
+                    } catch {
                     }
                 }
             }
-
-            return tokens;
-        }, []);
+        }
 
         return results;
     }
