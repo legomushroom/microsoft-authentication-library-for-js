@@ -61,14 +61,14 @@ export class BrowserStorage {// Singleton
             throw AuthError.createNoWindowObjectError("Browser storage class could not find window object");
         }
 
-        if (typeof this.cacheLocation === "string") {
+        if (typeof cacheLocation === "string") {
             const stringStorageSupported =
-                typeof window[this.cacheLocation] !== "undefined" &&
-                window[this.cacheLocation] != null;
+                typeof window[cacheLocation] !== "undefined" &&
+                window[cacheLocation] != null;
 
             if (!stringStorageSupported) {
                 throw ClientConfigurationError.createStorageNotSupportedError(
-                    this.cacheLocation
+                    cacheLocation
                 );
             }
         }
@@ -77,11 +77,11 @@ export class BrowserStorage {// Singleton
 
     getStorage(): ICustomStorage | typeof localStorage {
         if (this.cacheLocation === "localStorage") {
-            return localStorage;
+            return window.localStorage;
         }
 
         if (this.cacheLocation === "sessionStorage") {
-            return sessionStorage;
+            return window.sessionStorage;
         }
 
         if (this.cacheLocation instanceof CustomStorage) {
