@@ -3,9 +3,51 @@
  * Licensed under the MIT License.
  */
 
-import { CacheLocation } from "../Configuration";
 import { ClientConfigurationError } from "../error/ClientConfigurationError";
 import { AuthError } from "../error/AuthError";
+
+interface ICustomStorage {
+    setItem(key: string, value: string): void;
+    getItem(key: string): string | null;
+    removeItem(key: string): void;
+    clear(): void;
+    key(index: number): string | undefined;
+    getAllKeys(): string[];
+}
+
+class CustomStorageNotImplementedError extends Error {
+    constructor(methodName: string) {
+        super(`Method not implemented: "${methodName}" on the custom storage`);
+    }
+}
+
+export class CustomStorage implements ICustomStorage {
+    setItem(key: string, value: string): void {
+        throw new CustomStorageNotImplementedError("setItem");
+    }
+
+    getItem(key: string): string {
+        throw new CustomStorageNotImplementedError("getItem");
+    }
+
+    removeItem(key: string): void {
+        throw new CustomStorageNotImplementedError("removeItem");
+    }
+
+    clear(): void {
+        throw new CustomStorageNotImplementedError("clear");
+    }
+
+    key(index: number): string {
+        throw new CustomStorageNotImplementedError("key");
+    }
+
+    getAllKeys(): string[] {
+        throw new CustomStorageNotImplementedError("getAllKeysgetAllKeys");
+    }
+}
+
+export type CacheLocation = "localStorage" | "sessionStorage" | ICustomStorage; // eslint-disable-line
 
 /**
  * @hidden
@@ -19,11 +61,34 @@ export class BrowserStorage {// Singleton
             throw AuthError.createNoWindowObjectError("Browser storage class could not find window object");
         }
 
-        const storageSupported = typeof window[cacheLocation] !== "undefined" && window[cacheLocation] != null;
-        if (!storageSupported) {
-            throw ClientConfigurationError.createStorageNotSupportedError(cacheLocation);
+        if (typeof cacheLocation === "string") {
+            const stringStorageSupported =
+                typeof window[cacheLocation] !== "undefined" &&
+                window[cacheLocation] != null;
+
+            if (!stringStorageSupported) {
+                throw ClientConfigurationError.createStorageNotSupportedError(
+                    cacheLocation
+                );
+            }
         }
         this.cacheLocation = cacheLocation;
+    }
+
+    getStorage(): ICustomStorage | typeof localStorage {
+        if (this.cacheLocation === "localStorage") {
+            return window.localStorage;
+        }
+
+        if (this.cacheLocation === "sessionStorage") {
+            return window.sessionStorage;
+        }
+
+        if (this.cacheLocation instanceof CustomStorage) {
+            return this.cacheLocation;
+        }
+
+        throw new Error("Unsupported storage type");
     }
 
     /**
@@ -33,7 +98,7 @@ export class BrowserStorage {// Singleton
      * @param enableCookieStorage
      */
     setItem(key: string, value: string, enableCookieStorage?: boolean): void {
-        window[this.cacheLocation].setItem(key, value);
+        this.getStorage().setItem(key, value);
         if (enableCookieStorage) {
             this.setItemCookie(key, value);
         }
@@ -48,7 +113,7 @@ export class BrowserStorage {// Singleton
         if (enableCookieStorage && this.getItemCookie(key)) {
             return this.getItemCookie(key);
         }
-        return window[this.cacheLocation].getItem(key);
+        return this.getStorage().getItem(key);
     }
 
     /**
@@ -56,14 +121,14 @@ export class BrowserStorage {// Singleton
      * @param key
      */
     removeItem(key: string): void {
-        return window[this.cacheLocation].removeItem(key);
+        return this.getStorage().removeItem(key);
     }
 
     /**
      * clear storage (remove all items from it)
      */
     clear(): void {
-        return window[this.cacheLocation].clear();
+        return this.getStorage().clear();
     }
 
     /**
